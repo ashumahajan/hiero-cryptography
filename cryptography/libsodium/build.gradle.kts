@@ -112,9 +112,9 @@ tasks.assemble {
             } else { // Windows
                 "dll"
             }
-        // libsodium native build adds a "-/.26" suffix to the lib name.
+        // libsodium native build adds a "-/.26" suffix/infix to the lib name.
         // It has something to do with ABI version or maybe something else.
-        val filename = "libsodium?26.${libExt}"
+        val filename = listOf("libsodium?26.${libExt}", "libsodium.${libExt}.26")
         println("Copy $filename from $buildDir/ to $targetDir/")
         injected.files.mkdir(targetDir)
         injected.files.sync {
@@ -123,8 +123,17 @@ tasks.assemble {
 
             include(filename)
 
+            eachFile { println("   Copying: $displayName") }
+
             // Remove the "-/.26" suffix because we don't need it.
             rename { name -> name.replace(".26", "").replace("-26", "") }
         }
+        println("Finished copying files.")
+        println("Destination listing so far: ${dstDir.get().asFile.absolutePath}")
+        injected.execOps.exec {
+            workingDir(srcDir)
+            commandLine("ls", "-lR", dstDir.get().asFile.absolutePath)
+        }
+        println("-----")
     }
 }
